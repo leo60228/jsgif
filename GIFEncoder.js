@@ -354,10 +354,23 @@ GIFEncoder = function() {
 		colorDepth = 8;
 		palSize = 7;
 
-		// get closest match to transparent color if specified
-		if (transparent !== null) {
+		if (transparent != null) {
 			transIndex = findClosest(transparent);
-		}
+
+			var r = colorTab[transIndex*3];
+			var g = colorTab[transIndex*3+1];
+			var b = colorTab[transIndex*3+2];
+			var trans_indices = [];
+			for (var i=0; i<colorTab.length; i+=3) {
+				var index = i / 3;
+				if (!usedEntry[index]) continue;
+				if (colorTab[i] == r && colorTab[i+1] == g && colorTab[i+2] == b)
+				trans_indices.push(index);
+			}
+			for (var i=0; i<indexedPixels.length; i++)
+				if (trans_indices.indexOf(indexedPixels[i]) >= 0)
+					indexedPixels[i] = transIndex;
+			}
 	};
 
 	/**
@@ -374,18 +387,18 @@ GIFEncoder = function() {
 		var dmin = 256 * 256 * 256;
 		var len = colorTab.length;
 
-		for (var i = 0; i < len;) {
-			var dr = r - (colorTab[i++] & 0xff);
-			var dg = g - (colorTab[i++] & 0xff);
-			var db = b - (colorTab[i] & 0xff);
-			var d = dr * dr + dg * dg + db * db;
-			var index = i / 3;
+		for (var i/*int*/ = 0; i < len;) {
+			var dr/*int*/ = r - (colorTab[i++] & 0xff);
+			var dg/*int*/ = g - (colorTab[i++] & 0xff);
+			var db/*int*/ = b - (colorTab[i++] & 0xff);
+			var d/*int*/ = dr * dr + dg * dg + db * db;
+			var index/*int*/ = (i / 3) - 1;
 			if (usedEntry[index] && (d < dmin)) {
 				dmin = d;
 				minpos = index;
 			}
-			i++;
 		}
+
 		return minpos;
 	};
 
